@@ -38,8 +38,8 @@ component {
     return this;
   }
 
-  public function field(required string key, required value) {
-    variables.fields[key] = value;
+  public function field(required string name, required value) {
+    variables.fields[name] = value;
     return this;
   }
 
