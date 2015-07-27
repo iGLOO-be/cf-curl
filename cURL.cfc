@@ -5,6 +5,7 @@ component {
     variables.target = arguments.target;
     variables.method = 'GET';
     variables.headers = {};
+    variables.redirect = true;
     variables.multipart = false;
     variables.fields = {};
     variables.encoding = 'utf-8';
@@ -53,6 +54,11 @@ component {
     return this;
   }
 
+  public function redirect(required boolean on) {
+    variables.redirect = on;
+    return this;
+  }
+
 
   // ----
 
@@ -79,6 +85,11 @@ component {
 
   private array function _commandArgs() {
     var c = ['-i']; // Headers and Content
+
+    // Follow redirect
+    if(variables.redirect) {
+      c.add('-L');
+    }
 
     // Headers
     var h = '';
