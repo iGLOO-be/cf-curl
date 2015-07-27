@@ -30,7 +30,7 @@ component {
     return this;
   }
 
-  public function headers(required array h) {
+  public function headers(required struct h) {
     structAppend(variables.headers, h);
     return this;
   }
@@ -72,9 +72,16 @@ component {
   private array function _commandArgs() {
     var c = ['-i']; // Headers and Content
 
+    // Headers
+    var h = '';
+    for(h in variables.headers) {
+      c.add('-H');
+      c.add('#h#: #variables.headers[h]#');
+    }
+
     // Method
     c.add('-X');
-    c.add('#variables.method#');
+    c.add(variables.method);
 
     // Form
     var k = '';
