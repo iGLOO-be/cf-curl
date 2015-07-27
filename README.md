@@ -15,6 +15,7 @@ res = req.exec();
 - `.headers({ name = value, ... })`
 - `.field(name, value)`
 - `.multipart(true|false)`: default `false`
+- `.basicAuth(user, password)`
 - `.command()`: show the command generated
 - `.exec()`: execute the command and return the response parsed
 

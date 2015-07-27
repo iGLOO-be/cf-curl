@@ -8,6 +8,8 @@ component {
     variables.multipart = false;
     variables.fields = {};
     variables.encoding = 'utf-8';
+    variables.userName = '';
+    variables.password = '';
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.IOUtils = createObject('java', 'org.apache.commons.io.IOUtils');
@@ -45,6 +47,12 @@ component {
     return this;
   }
 
+  public function basicAuth(required string user, string password = '') {
+    variables.userName = user;
+    variables.password = password;
+    return this;
+  }
+
 
   // ----
 
@@ -77,6 +85,12 @@ component {
     for(h in variables.headers) {
       c.add('-H');
       c.add('#h#: #variables.headers[h]#');
+    }
+
+    // Basic access authentication
+    if(len(variables.userName) && len(variables.password)) {
+      c.add('-H');
+      c.add('Authorization: Basic #_getBasicAuthHash()#');
     }
 
     // Method
@@ -181,6 +195,10 @@ component {
     result['content'] = arrayToList(body, '');
 
     return result;
+  }
+
+  private string function _getBasicAuthHash() {
+    return toBase64(variables.userName & ':' & variables.password);
   }
 
 }
