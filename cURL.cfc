@@ -137,8 +137,16 @@ component {
     return p;
   }
 
-  private function _fullCommand(required string name, array args = []) {
-    return name & ' ' & arrayToList(args, ' ');
+  private string function _fullCommand(required string name, array args = []) {
+    var cmd = [name];
+    for(var i = 1; i <= arrayLen(args); i++) {
+      if(left(args[i],1) == '-') {
+        cmd.add(args[i]);
+      } else {
+        cmd.add('"#args[i]#"');
+      }
+    }
+    return arrayToList(cmd, ' ');
   }
 
   private struct function _parseResponse(required inStream) {
