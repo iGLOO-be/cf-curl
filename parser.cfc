@@ -67,6 +67,8 @@ component {
           for(section in converted[i][dir]) {
             var value = converted[i][dir][section];
             if(dir == 'response' && section == 'header') {
+              // Remove "Continue" in case multipart
+              value = reReplace(value, 'HTTP\/\d\.\d\s100[^(HTTP)]*', '');
               r[dir]['status'] = _parseStatusLine(value);
               r[dir][section] = _parseHeaders(value);
             } else {
