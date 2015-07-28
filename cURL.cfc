@@ -13,8 +13,6 @@ component {
     variables.password = '';
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
-    variables.IOUtils = createObject('java', 'org.apache.commons.io.IOUtils');
-    variables.HttpParser = createObject('java', 'org.apache.commons.httpclient.HttpParser');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
 
     return this;
@@ -66,17 +64,15 @@ component {
     return _fullCommand(variables.commandPath, _commandArgs());
   }
 
-  public function exec() {
+  public function exec(boolean all = false) {
     var args = _commandArgs();
     var p = _exec(variables.commandPath, args);
-
-    p.waitFor();
 
     if (p.exitValue() != 0) {
       return _handleProcessError(p, variables.commandPath, args);
     } else {
-      var res = _parseResponse(p.getInputStream());
-      return res;
+      var parsed = _parse();
+      return all ? parsed : parsed[arrayLen(parsed)];
     }
   }
 
@@ -84,7 +80,7 @@ component {
   // ----
 
   private array function _commandArgs() {
-    var c = ['-i']; // Headers and Content
+    var c = ['-i', '--trace', '-']; // Headers and Content
 
     // Follow redirect
     if(variables.redirect) {
@@ -139,14 +135,14 @@ component {
   }
 
   private function _handleProcessError(required any process, required string command, required array args) {
-    var error = process.getErrorStream();
+    var error = variables.threadError;
     var fullCommand = _fullCommand(command, args);
 
     var message = [
       'cURL has fail.',
       'Command: `#fullCommand#`',
       'Exit code: `#process.exitValue()#`',
-      'Message: `#IOUtils.toString(error)#`'
+      'Message: `#error#`'
     ];
 
     throw(message = arrayToList(message, ' - '), detail = message[4]);
@@ -159,6 +155,51 @@ component {
     cmd.addAll(args);
 
     var p = runtime.exec(cmd);
+    variables.threadInput = [];
+    variables.threadError = [];
+
+    var uuid = createUUID();
+    var threads = {
+      'input' = uuid & '_input',
+      'error' = uuid & '_error'
+    };
+
+    var variables.processIsExited = false;
+
+    thread name="#threads.input#" p="#p#" {
+      var isr = createObject('java', 'java.io.InputStreamReader').init(p.getInputStream());
+      var br = createObject('java', 'java.io.BufferedReader').init(isr);
+      while(true) {
+        var line = br.readLine();
+        if(!isNull(line)) {
+          threadInput.add(line);
+          writeOutput(line);
+        }
+        else if( isExited ) {
+          break;
+        }
+      }
+    }
+
+    thread name="#threads.error#" p="#p#" {
+      var isr = createObject('java', 'java.io.InputStreamReader').init(p.getErrorStream());
+      var br = createObject('java', 'java.io.BufferedReader').init(isr);
+      while(true) {
+        var line = br.readLine();
+        if(!isNull(line)) {
+          threadError.add(line);
+        } else if( isExited ) {
+          break;
+        }
+      }
+    }
+
+    p.waitFor();
+    variables.isExited = true;
+
+    threadJoin('#threads.input#');
+    threadJoin('#threads.error#');
+
     return p;
   }
 
@@ -174,38 +215,8 @@ component {
     return arrayToList(cmd, ' ');
   }
 
-  private struct function _parseResponse(required inStream) {
-    var res = IOUtils.toString(inStream, variables.encoding);
-
-    // Remove "Continue" in case multipart
-    res = reReplace(res, 'HTTP\/\d\.\d\s100[^(HTTP)]*', '');
-
-    var statusRE = '(HTTP/\d\.\d\s+(\d+)\s+[^\n]+)';
-    var result = {
-      'status' = reReplace(res, statusRE & '.*', '\1'),
-      'statusCode' = reReplace(res, statusRE & '.*', '\2')
-    };
-
-    var modified = IOUtils.toInputStream(trim(reReplace(res, statusRE, '')));
-    var headersArr = HttpParser.parseHeaders(modified, variables.encoding);
-    var headers = {};
-    for (var i = 1; i <= arrayLen(headersArr); i++) {
-      headers[headersArr[i].getName()] = headersArr[i].getValue();
-    }
-
-    result['headers'] = headers;
-
-    var body = [];
-    do {
-      var line = HttpParser.readLine(modified);
-      if(!isNull(line)) {
-        body.add(line);
-      }
-    } while(!isNull(line));
-
-    result['content'] = arrayToList(body, '');
-
-    return result;
+  private array function _parse() {
+    return new Parser().parse(variables.threadInput);
   }
 
   private string function _getBasicAuthHash() {
