@@ -17,13 +17,17 @@ res = req.exec();
 - `.multipart(true|false)`: default `false`
 - `.basicAuth(user, password)`
 - `.command()`: show the command generated
-- `.exec()`: execute the command and return the response parsed
+- `.exec(true|false)`: execute the command and return the request and response parsed. Default `false`. If `true`, it return all calls.
 
 ## Result
 
-The return of `.exec()` is a struct.
+Return of `.exec()`.
 
-- `status`
-- `statusCode`
-- `headers`
-- `content`
+- request
+  + sections: headers, ...
+- response
+  + header
+  + data
+  + status
+    * code
+    * line
