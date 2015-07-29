@@ -209,12 +209,10 @@ component {
         var str = arrayToList(stringBuffer[dir][section], '');
         if(section == 'data') {
           if(isChunked) {
-            var hexPattern = '(\r\n[0-9a-f]{1,2}\r\n)';
-            str = reReplace(str, '(\r\n[0-9]+\r\n)', '', 'all');
+            var hexPattern = '(\r\n[0-9a-f]+\r\n)';
+            str = reReplace(str, hexPattern, '', 'all');
             // Remove first value of data.
-            str = listToArray(str, '#chr(10)##chr(13)#');
-            arrayDeleteAt(str,1);
-            str = arrayToList(str, '#chr(10)##chr(13)#');
+            str = reReplace(str, '^([0-9a-f]+\r\n)', '');
           }
         }
         output[dir][section] = str;
