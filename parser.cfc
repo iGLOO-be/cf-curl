@@ -90,8 +90,19 @@ component {
     return ident == '=>' ? 'request' : 'response';
   }
 
-  private array function _match(required string r, required string str) {
-    var p = Pattern.compile(r);
+  private array function _match(required string r, required string str, flags) {
+    if(!isNull(flags)) {
+      if(isSimpleValue(flags)) {
+        flags = listToArray(flags);
+      }
+      var flagInt = 0;
+      var flagName = '';
+      for (flagName in flags)
+        flagInt += Pattern[flagName];
+      var p = Pattern.compile(r, javacast("int", flagInt));
+    } else {
+      var p = Pattern.compile(r);
+    }
     var m = p.matcher(str);
     var i = 1;
     var res = [];
@@ -180,16 +191,31 @@ component {
     // convert stringBuffer to output
     var output = {'request': {}, 'response': {}};
     for(dir in stringBuffer) {
+      var isChunked = false;
+      var sections = structKeyArray(stringBuffer[dir]);
+
+      // headers first
+      if(arrayFindNoCase(sections, 'header')) {
+        var headers = arrayToList(stringBuffer[dir].header, '');
+        if(arrayLen(_match('(transfer-encoding:\s*?chunked)', headers, 'CASE_INSENSITIVE'))) {
+          isChunked = true;
+        }
+        output[dir]['header'] = headers;
+        arrayDelete(sections,'header');
+      }
+
       var section = '';
       for(section in stringBuffer[dir]) {
         var str = arrayToList(stringBuffer[dir][section], '');
         if(section == 'data') {
-          // Remove numeric values
-          str = reReplace(str, '(\r\n[0-9]+\r\n)', '', 'all');
-          // Remove first value of data.
-          str = listToArray(str, '#chr(10)##chr(13)#');
-          arrayDeleteAt(str,1);
-          str = arrayToList(str, '#chr(10)##chr(13)#');
+          if(isChunked) {
+            var hexPattern = '(\r\n[0-9a-f]{1,2}\r\n)';
+            str = reReplace(str, '(\r\n[0-9]+\r\n)', '', 'all');
+            // Remove first value of data.
+            str = listToArray(str, '#chr(10)##chr(13)#');
+            arrayDeleteAt(str,1);
+            str = arrayToList(str, '#chr(10)##chr(13)#');
+          }
         }
         output[dir][section] = str;
       }
