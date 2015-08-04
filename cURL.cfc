@@ -81,6 +81,7 @@ component {
 
   private array function _commandArgs() {
     var c = ['-i', '--trace', '-']; // Headers and Content
+    var targetUrl = variables.target;
 
     // Follow redirect
     if(variables.redirect) {
@@ -106,30 +107,42 @@ component {
 
     // Form
     var k = '';
-    if(variables.multipart) {
-      // multipart/form-data
+    if(variables.method == 'post' || variables.method == 'put') {
+      if(variables.multipart) {
+        // multipart/form-data
 
-      for(k in variables.fields) {
-        c.add('--form');
-        c.add('#k#=#variables.fields[k]#');
-      }
-    } else if (structCount(variables.fields)) {
-      // application/x-www-form-urlencoded
+        for(k in variables.fields) {
+          c.add('--form');
+          c.add('#k#=#variables.fields[k]#');
+        }
+      } else if (structCount(variables.fields)) {
+        // application/x-www-form-urlencoded
 
-      var f = [];
-      for(k in variables.fields) {
-        f.add(
-          '#UrlEncoder.encode(k, variables.encoding)#' &
-          '=' &
-          '#UrlEncoder.encode(variables.fields[k], variables.encoding)#'
-        );
+        var f = [];
+        for(k in variables.fields) {
+          f.add(
+            '#UrlEncoder.encode(k, variables.encoding)#' &
+            '=' &
+            '#UrlEncoder.encode(variables.fields[k], variables.encoding)#'
+          );
+        }
+        c.add('--data');
+        c.add('#arrayToList(f, '&')#');
       }
-      c.add('--data');
-      c.add('#arrayToList(f, '&')#');
+    } else if(structCount(variables.fields)) {
+      var qs = [];
+      for(k in variables.fields) {
+          qs.add(
+            '#UrlEncoder.encode(k, variables.encoding)#' &
+            '=' &
+            '#UrlEncoder.encode(variables.fields[k], variables.encoding)#'
+          );
+        }
+      targetUrl &= '?' & arrayToList(qs, '&');
     }
 
     // Target
-    c.add(variables.target);
+    c.add(targetUrl);
 
     return c;
   }

@@ -20,6 +20,18 @@ if(deserializeJSON(res.response.data).headers.Host != expected.headers.host) {
 
 
 
+writeOutput("<br/><h1>GET with qs</h1>");
+target = 'http://httpbin.org/get';
+cURL = new cURL(target).field('abc', 'def');
+res = cURL.exec();
+expected = deserializeJSON('{"args": { "abc": "def" }, "headers": { "Accept": "*/*", "Host": "httpbin.org", "User-Agent": "curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3" }, "origin": "5.149.142.22", "url": "http://httpbin.org/get" }');
+writeDump(res);
+if(deserializeJSON(res.response.data).args.abc != expected.args.abc) {
+  dumpError('Error: not equal to <br/> #serializeJson(expected)#');
+}
+
+
+
 writeOutput("<br/><h1>POST</h1>");
 target = 'http://httpbin.org/post';
 cURL = new cURL(target)
