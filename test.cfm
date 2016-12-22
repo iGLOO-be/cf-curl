@@ -63,4 +63,20 @@ if(!structKeyExists(expected.form, 'abc') || !structKeyExists(expected.form, 'az
   dumpError('Error: not equal to <br/> #expected#');
 }
 
+
+
+writeOutput("<br/><h1>POST (json)</h1>");
+target = 'http://httpbin.org/post';
+cURL = new cURL(target)
+  .method('post')
+  .json()
+  .field('abc', 'def')
+  .field('azerty', 123)
+;
+res = cURL.exec();
+expected = deserializeJSON('{"args": {}, "data": "", "files": {}, "form": { "abc": "def", "azerty": "123" }, "headers": { "Accept": "*/*", "Content-Length": "239", "Content-Type": "multipart/form-data; boundary=----------------------------7cb7997bd60e", "Host": "httpbin.org", "User-Agent": "curl/7.22.0 (x86_64-pc-linux-gnu) libcurl/7.22.0 OpenSSL/1.0.1 zlib/1.2.3.4 libidn/1.23 librtmp/2.3" }, "json": null, "origin": "5.149.142.22", "url": "http://httpbin.org/post" }');
+writeDump(res);
+if(!structKeyExists(expected.form, 'abc') || !structKeyExists(expected.form, 'azerty')) {
+  dumpError('Error: not equal to <br/> #expected#');
+}
 </cfscript>

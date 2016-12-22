@@ -17,7 +17,8 @@ res = req.exec();
 - `.fields(struct)`
 - `.multipart(true|false)`: default `false`
 - `.basicAuth(user, password)`
-- `.command()`: show the command generated
+- `.json()`: add header `application/json` and serialize fields.
+- `.command()`: show the command generated.
 - `.exec(true|false)`: execute the command and return the request and response parsed. Default `false`. If `true`, it return all calls.
 
 ## Result

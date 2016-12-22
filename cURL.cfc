@@ -11,6 +11,7 @@ component {
     variables.encoding = 'utf-8';
     variables.userName = '';
     variables.password = '';
+    variables.isJson = false;
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -67,6 +68,13 @@ component {
     return this;
   }
 
+  public function json(boolean on = true) {
+    variables.isJson = on;
+    if (on) {
+      this.header('Content-Type', 'application/json');
+    }
+    return this;
+  }
 
   // ----
 
@@ -126,29 +134,18 @@ component {
           c.add('#k#=#variables.fields[k]#');
         }
       } else if (structCount(variables.fields)) {
-        // application/x-www-form-urlencoded
-
-        var f = [];
-        for(k in variables.fields) {
-          f.add(
-            '#UrlEncoder.encode(k, variables.encoding)#' &
-            '=' &
-            '#UrlEncoder.encode(variables.fields[k], variables.encoding)#'
-          );
-        }
         c.add('--data');
-        c.add('#arrayToList(f, '&')#');
+
+        if (variables.isJson) {
+          // application/json
+          c.add(serializeJSON(variables.fields));
+        } else {
+          // application/x-www-form-urlencoded
+          c.add(_encodeFields(variables.fields));
+        }
       }
     } else if(structCount(variables.fields)) {
-      var qs = [];
-      for(k in variables.fields) {
-          qs.add(
-            '#UrlEncoder.encode(k, variables.encoding)#' &
-            '=' &
-            '#UrlEncoder.encode(variables.fields[k], variables.encoding)#'
-          );
-        }
-      targetUrl &= '?' & arrayToList(qs, '&');
+      targetUrl &= '?' & _encodeFields(variables.fields);
     }
 
     // Target
@@ -244,6 +241,18 @@ component {
 
   private string function _getBasicAuthHash() {
     return toBase64(variables.userName & ':' & variables.password);
+  }
+
+  private string function _encodeFields(required struct flds) {
+    var f = [];
+    for(k in flds) {
+      f.add(
+        '#UrlEncoder.encode(k, variables.encoding)#' &
+        '=' &
+        '#UrlEncoder.encode(JavaCast('string', flds[k]), variables.encoding)#'
+      );
+    }
+    return arrayToList(f, '&');
   }
 
 }
