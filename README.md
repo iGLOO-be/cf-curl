@@ -14,6 +14,7 @@ res = req.exec();
 - `.header(name, value)`
 - `.headers({ name = value, ... })`
 - `.field(name, value)`
+- `.fields(struct)`
 - `.multipart(true|false)`: default `false`
 - `.basicAuth(user, password)`
 - `.command()`: show the command generated

@@ -41,6 +41,16 @@ component {
     return this;
   }
 
+  public function fields(required struct f) {
+    for (var name in f) {
+      if (!structKeyExists(f, name) || isNull(f[name])) {
+        continue;
+      }
+      this.field(name, f[name]);
+    }
+    return this;
+  }
+
   public function multipart(required boolean on) {
     variables.multipart = on;
     return this;
