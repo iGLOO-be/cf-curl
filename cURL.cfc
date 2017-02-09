@@ -12,6 +12,7 @@ component {
     variables.userName = '';
     variables.password = '';
     variables.isJson = false;
+    variables.headOnly = false;
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -23,7 +24,11 @@ component {
   // Setters
 
   public function method(required string method) {
-    variables.method = uCase(arguments.method);
+    if (method == 'HEAD') {
+      this.head();
+    } else {
+      variables.method = uCase(arguments.method);
+    }
     return this;
   }
 
@@ -76,6 +81,11 @@ component {
     return this;
   }
 
+  public function head(boolean on = true) {
+    variables.headOnly = on;
+    return this;
+  }
+
   // ----
 
   public string function command() {
@@ -94,7 +104,6 @@ component {
     }
   }
 
-
   // ----
 
   private array function _commandArgs() {
@@ -104,6 +113,11 @@ component {
     // Follow redirect
     if(variables.redirect) {
       c.add('-L');
+    }
+
+    // Head
+    if (variables.headOnly) {
+      c.add('-I');
     }
 
     // Headers
@@ -128,7 +142,6 @@ component {
     if(variables.method == 'post' || variables.method == 'put') {
       if(variables.multipart) {
         // multipart/form-data
-
         for(k in variables.fields) {
           c.add('--form');
           c.add('#k#=#variables.fields[k]#');
