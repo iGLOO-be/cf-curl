@@ -175,7 +175,7 @@ component {
       'cURL has fail.',
       'Command: `#fullCommand#`',
       'Exit code: `#process.exitValue()#`',
-      'Message: `#error#`'
+      'Message: `#(isArray(error) ? error[1] : error)#`'
     ];
 
     throw(message = arrayToList(message, ' - '), detail = message[4]);
