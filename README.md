@@ -18,6 +18,7 @@ res = req.exec();
 - `.multipart(true|false)`: default `false`
 - `.basicAuth(user, password)`
 - `.json()`: add header `application/json` and serialize fields.
+- `.head()`: head only.
 - `.command()`: show the command generated.
 - `.exec(true|false)`: execute the command and return the request and response parsed. Default `false`. If `true`, it return all calls.
 
