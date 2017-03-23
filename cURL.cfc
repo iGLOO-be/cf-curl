@@ -178,7 +178,11 @@ component {
       'Message: `#(isArray(error) ? error[1] : error)#`'
     ];
 
-    throw(message = arrayToList(message, ' - '), detail = message[4]);
+    throw(
+      message = arrayToList(message, ' - '),
+      detail = message[4],
+      errorcode = process.exitValue()
+    );
   }
 
   private function _exec(required string name, required array args) {
