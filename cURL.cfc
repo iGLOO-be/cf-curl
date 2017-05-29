@@ -100,7 +100,9 @@ component {
       return _handleProcessError(p, variables.commandPath, args);
     } else {
       var parsed = _parse();
-      return all ? parsed : parsed[arrayLen(parsed)];
+      return all ? parsed : (
+        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
+      );
     }
   }
 
