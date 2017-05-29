@@ -14,7 +14,6 @@ component {
   }
 
   public function parse(array traceLines) {
-
     // find ASCI bytes in raw lines
     // will contain array of arrays with direction and data
     // e.g [['<=', "47 45 54 20 2f 73 68 6f 70 70 69 6e 67 2d 63 61"]]
@@ -43,7 +42,16 @@ component {
       var dataMatch = _match(dataPattern, line);
       if(arrayLen(dataMatch)) {
         data = trim(dataMatch[1]);
-        if(lastDirName != 'ssl' && i_req > 0) {
+
+        var shouldIgnore = false;
+
+        // Ignore SSL related lines
+        if (lastDirName == 'ssl') shouldIgnore = true;
+
+        // Ignore "send data", we don't care about it and it may cause out-of-memory!
+        if (lastSection == 'Send' && lastDirName == 'data') shouldIgnore = true;
+
+        if(!shouldIgnore && i_req > 0) {
           calls[i_req].add([lastDir, lastDirName, data]);
         }
       }
