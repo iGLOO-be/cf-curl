@@ -46,6 +46,21 @@ if(!structKeyExists(expected.form, 'abc') || !structKeyExists(expected.form, 'az
   dumpError('Error: not equal to <br/> #expected#');
 }
 
+writeOutput("<br/><h1>POST xml body</h1>");
+target = 'http://httpbin.org/post';
+expected = '<xml><foo>bar</foo></xml>';
+cURL = new cURL(target)
+  .method('post')
+  .header('Content-Type', 'text/xml')
+  .body(expected)
+;
+res = cURL.exec();
+writeDump(res);
+responseData = deserializeJSON(res.response.data);
+if(responseData.data != expected) {
+  dumpError('Error: not equal to <br/> #expected#');
+}
+
 
 
 writeOutput("<br/><h1>POST (multipart)</h1>");

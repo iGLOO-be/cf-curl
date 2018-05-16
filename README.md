@@ -13,6 +13,7 @@ res = req.exec();
 - `.method(m)`: default `GET`
 - `.header(name, value)`
 - `.headers({ name = value, ... })`
+- `.body(any)`
 - `.field(name, value)`
 - `.fields(struct)`
 - `.multipart(true|false)`: default `false`

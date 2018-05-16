@@ -7,6 +7,7 @@ component {
     variables.headers = {};
     variables.redirect = true;
     variables.multipart = false;
+    variables.body = javaCast('null', 0);
     variables.fields = {};
     variables.encoding = 'utf-8';
     variables.userName = '';
@@ -39,6 +40,11 @@ component {
 
   public function headers(required struct h) {
     structAppend(variables.headers, h);
+    return this;
+  }
+
+  public function body(required string body) {
+    variables.body = body;
     return this;
   }
 
@@ -142,7 +148,10 @@ component {
     // Form
     var k = '';
     if(variables.method == 'post' || variables.method == 'put') {
-      if(variables.multipart) {
+      if(!isNull(variables.body)) {
+        c.add('--data');
+        c.add(variables.body);
+      } else if(variables.multipart) {
         // multipart/form-data
         for(k in variables.fields) {
           c.add('--form');
