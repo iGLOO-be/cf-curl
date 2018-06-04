@@ -14,6 +14,7 @@ component {
     variables.password = '';
     variables.isJson = false;
     variables.headOnly = false;
+    variables.timeout = javaCast('null', 0);
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -92,6 +93,11 @@ component {
     return this;
   }
 
+  public function timeout(numeric timeout) {
+    variables.timeout = timeout;
+    return this;
+  }
+
   // ----
 
   public string function command() {
@@ -144,6 +150,12 @@ component {
     // Method
     c.add('-X');
     c.add(variables.method);
+
+    // Timeout
+    if(!isNull(variables.timeout)) {
+      c.add('-m');
+      c.add(variables.timeout);
+    }
 
     // Form
     var k = '';
