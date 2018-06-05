@@ -8,6 +8,7 @@ component {
     variables.redirect = true;
     variables.multipart = false;
     variables.body = javaCast('null', 0);
+    variables.file = javaCast('null', 0);
     variables.fields = {};
     variables.encoding = 'utf-8';
     variables.userName = '';
@@ -46,6 +47,11 @@ component {
 
   public function body(required string body) {
     variables.body = body;
+    return this;
+  }
+
+  public function file(required string file) {
+    variables.file = file;
     return this;
   }
 
@@ -163,6 +169,9 @@ component {
       if(!isNull(variables.body)) {
         c.add('--data');
         c.add(variables.body);
+      } else if(!isNull(variables.file)) {
+        c.add('-T');
+        c.add(variables.file);
       } else if(variables.multipart) {
         // multipart/form-data
         for(k in variables.fields) {
