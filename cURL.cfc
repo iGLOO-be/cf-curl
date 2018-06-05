@@ -15,6 +15,8 @@ component {
     variables.isJson = false;
     variables.headOnly = false;
     variables.timeout = javaCast('null', 0);
+    variables.file = javaCast('null', 0);
+    variables.output = javaCast('null', 0);
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -46,6 +48,11 @@ component {
 
   public function body(required string body) {
     variables.body = body;
+    return this;
+  }
+
+  public function file(required string file) {
+    variables.file = file;
     return this;
   }
 
@@ -98,6 +105,11 @@ component {
     return this;
   }
 
+  public function output(string output) {
+    variables.output = output;
+    return this;
+  }
+
   // ----
 
   public string function command() {
@@ -121,8 +133,17 @@ component {
   // ----
 
   private array function _commandArgs() {
-    var c = ['-i', '--trace', '-']; // Headers and Content
     var targetUrl = variables.target;
+    var c = [];
+
+    // Output
+    if (isNull(variables.output)) {
+      // Headers and Content
+      c.addAll(['-i', '--trace', '-']);
+    } else {
+      c.add('-o');
+      c.add(variables.output);
+    }
 
     // Follow redirect
     if(variables.redirect) {
@@ -163,6 +184,9 @@ component {
       if(!isNull(variables.body)) {
         c.add('--data');
         c.add(variables.body);
+      } else if(!isNull(variables.file)) {
+        c.add('-T');
+        c.add(variables.file);
       } else if(variables.multipart) {
         // multipart/form-data
         for(k in variables.fields) {
