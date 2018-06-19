@@ -1,6 +1,8 @@
 # cURL
 Coldfusion component that use cURL command.
 
+Compatibility CF10+
+
 ## Usage
 
 ```
