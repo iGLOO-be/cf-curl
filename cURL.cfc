@@ -340,38 +340,27 @@ component {
       'error' = uuid & '_error'
     };
 
-    var variables.processIsExited = false;
-
     thread name="#threads.input#" p="#p#" {
       var isr = createObject('java', 'java.io.InputStreamReader').init(p.getInputStream());
       var br = createObject('java', 'java.io.BufferedReader').init(isr);
-      while(true) {
-        var line = br.readLine();
-        if(!isNull(line)) {
-          threadInput.add(line);
-          writeOutput(line);
-        }
-        else if( isExited ) {
-          break;
-        }
+      var line = br.readLine();
+      while(!isNull(line)) {
+        threadInput.add(line);
+        line = br.readLine();
       }
     }
 
     thread name="#threads.error#" p="#p#" {
       var isr = createObject('java', 'java.io.InputStreamReader').init(p.getErrorStream());
       var br = createObject('java', 'java.io.BufferedReader').init(isr);
-      while(true) {
-        var line = br.readLine();
-        if(!isNull(line)) {
-          threadError.add(line);
-        } else if( isExited ) {
-          break;
-        }
+      var line = br.readLine();
+      while(!isNull(line)) {
+        threadInput.add(line);
+        line = br.readLine();
       }
     }
 
     p.waitFor();
-    variables.isExited = true;
 
     threadJoin('#threads.input#');
     threadJoin('#threads.error#');
