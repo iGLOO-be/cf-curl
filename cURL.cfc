@@ -340,8 +340,6 @@ component {
       'error' = uuid & '_error'
     };
 
-    var variables.processIsExited = false;
-
     thread name="#threads.input#" p="#p#" {
       var isr = createObject('java', 'java.io.InputStreamReader').init(p.getInputStream());
       var br = createObject('java', 'java.io.BufferedReader').init(isr);
