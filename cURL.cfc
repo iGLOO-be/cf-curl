@@ -390,6 +390,7 @@ component {
 
   private string function _encodeFields(required struct flds) {
     var f = [];
+    var k = "";
     for(k in flds) {
       f.add(
         '#UrlEncoder.encode(k, variables.encoding)#' &
