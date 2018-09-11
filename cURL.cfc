@@ -1,6 +1,6 @@
 component {
 
-  public cUrl function init(required string target) {
+  public cUrl function init(required string target, struct options) {
     variables.commandPath = 'curl';
     variables.target = arguments.target;
     variables.method = 'GET';
@@ -107,6 +107,8 @@ component {
       92: 'HTTP2_STREAM',
       93: 'RECURSIVE_API_CALL'
     };
+
+    structAppend(variables, arguments.options);
 
     return this;
   }
