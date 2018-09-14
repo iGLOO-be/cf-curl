@@ -1,6 +1,6 @@
 component {
 
-  public cUrl function init(required string target) {
+  public cUrl function init(required string target, struct options) {
     variables.commandPath = 'curl';
     variables.target = arguments.target;
     variables.method = 'GET';
@@ -107,6 +107,8 @@ component {
       92: 'HTTP2_STREAM',
       93: 'RECURSIVE_API_CALL'
     };
+
+    structAppend(variables, arguments.options);
 
     return this;
   }
@@ -390,6 +392,7 @@ component {
 
   private string function _encodeFields(required struct flds) {
     var f = [];
+    var k = "";
     for(k in flds) {
       f.add(
         '#UrlEncoder.encode(k, variables.encoding)#' &
