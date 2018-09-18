@@ -1,6 +1,6 @@
 component {
 
-  public cUrl function init(required string target, struct options) {
+  public cUrl function init(required string target, struct options = {}) {
     variables.commandPath = 'curl';
     variables.target = arguments.target;
     variables.method = 'GET';
