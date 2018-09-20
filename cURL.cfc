@@ -205,17 +205,30 @@ component {
     return _fullCommand(variables.commandPath, _commandArgs());
   }
 
-  public function exec(boolean all = false) {
+  public function exec(boolean all = false, boolean parse = false) {
     var args = _commandArgs();
-    var p = _exec(variables.commandPath, args);
+    var argstr = "";
+    var p = "";
 
-    if (p.exitValue() != 0) {
-      return _handleProcessError(p, variables.commandPath, args);
+    if(arguments.parse){
+    	p = _exec(variables.commandPath, args);
+
+	    if (p.exitValue() != 0) {
+	      return _handleProcessError(p, variables.commandPath, args);
+	    } else {
+	      var parsed = _parse();
+	      return all ? parsed : (
+	        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
+	      );
+	    }
     } else {
-      var parsed = _parse();
-      return all ? parsed : (
-        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
-      );
+    	for (i = 1; i < arrayLen(args); i++) {
+    		argstr = argstr & args[i] & " ";
+    	}
+    	argstr = argstr & args[arrayLen(args)];
+
+    	cfexecute(name=variables.commandPath arguments=argstr);
+    	return 'undefined';
     }
   }
 
@@ -248,13 +261,13 @@ component {
     var h = '';
     for(h in variables.headers) {
       c.add('-H');
-      c.add('#h#: #variables.headers[h]#');
+      c.add('''#h#: #variables.headers[h]#''');
     }
 
     // Basic access authentication
     if(len(variables.userName) && len(variables.password)) {
       c.add('-H');
-      c.add('Authorization: Basic #_getBasicAuthHash()#');
+      c.add('''Authorization: Basic #_getBasicAuthHash()#''');
     }
 
     // Method
@@ -330,9 +343,11 @@ component {
     var runtime = Runtime.getRuntime();
 
     var cmd = [name];
+    var p = "";
     cmd.addAll(args);
 
-    var p = runtime.exec(cmd);
+    p = runtime.exec(cmd);
+
     variables.threadInput = [];
     variables.threadError = [];
 
@@ -357,7 +372,7 @@ component {
       var br = createObject('java', 'java.io.BufferedReader').init(isr);
       var line = br.readLine();
       while(!isNull(line)) {
-        threadInput.add(line);
+        threadError.add(line);
         line = br.readLine();
       }
     }
