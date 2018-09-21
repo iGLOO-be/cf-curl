@@ -209,6 +209,7 @@ component {
     var args = _commandArgs();
     var argstr = "";
     var p = "";
+    var sTmpOutput = "";
 
     if(arguments.parse){
     	p = _exec(variables.commandPath, args);
@@ -222,13 +223,14 @@ component {
 	      );
 	    }
     } else {
-    	for (i = 1; i < arrayLen(args); i++) {
+    	for (var i = 1; i < arrayLen(args); i++) {
     		argstr = argstr & args[i] & " ";
     	}
     	argstr = argstr & args[arrayLen(args)];
 
-    	cfexecute(name=variables.commandPath arguments=argstr);
-    	return 'undefined';
+    	cfexecute(name=variables.commandPath,arguments=argstr,variable="sTmpOutput");
+
+    	return sTmpOutput;
     }
   }
 
