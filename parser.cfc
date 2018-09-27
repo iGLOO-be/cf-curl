@@ -206,7 +206,10 @@ component {
     }
 
     // convert stringBuffer to output
-    var output = {'request': {}, 'response': {}};
+    var output = {
+      'request' = {},
+      'response' = {}
+    };
     for(dir in stringBuffer) {
       var isChunked = false;
       var sections = structKeyArray(stringBuffer[dir]);
