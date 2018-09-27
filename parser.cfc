@@ -148,7 +148,10 @@ component {
 
   private struct function _convertASCIIsets(required array asciiHexSets) {
     // split lines by spaces and make array of ASCII hex bytes
-    var asciiHexBuffer = {request: {}, response: {}};
+    var asciiHexBuffer = {
+      request = {},
+      response = {}
+    };
     var set = '';
     for(set in asciiHexSets) {
       var d = _dir(set[1]);
@@ -164,7 +167,10 @@ component {
     }
 
     // convert ASCII hex to ASCII integers codes
-    var asciiIntBuffer = {request: {}, response: {}};
+    var asciiIntBuffer = {
+      request = {},
+      response = {}
+    };
     var dir = '';
     for(dir in asciiHexBuffer) {
       var section = '';
@@ -181,7 +187,10 @@ component {
     }
 
     // convert ACII codes to charactes
-    var stringBuffer = {request: {}, response: {}};
+    var stringBuffer = {
+      request = {},
+      response = {}
+    };
     for(dir in asciiIntBuffer) {
       var section = '';
       for(section in asciiIntBuffer[dir]) {
