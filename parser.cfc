@@ -135,43 +135,33 @@ component {
     };
   }
 
-  private query function _parseCookies(required string headers) {
-    var qCookies = queryNew('name,value,httponly,expires,path','string,string,string,string,string');
+  private array function _parseCookies(required struct headers) {
+    var cookies = [];
     var aCookies = structKeyExists(arguments.headers,"set-cookie") ? arguments.headers["set-cookie"] : [];
-
     if (!isArray(aCookies)) {
         aCookies = [ aCookies ];
     }
-
     for(var c in aCookies) {
-        queryAddRow(qCookies,1);
-        var pc = _parseSingleCookie(c);
-        for(var col in pc) {
-            if(!listContainsNoCase(queryColumnList(qCookies), trim(col))) {
-                queryAddColumn(qCookies, lcase(trim(col)), 'string');
-            }
-            querySetCell(qCookies, lcase(trim(col)), pc[col]);
-        }
+      cookies.add(_parseSingleCookie(c));
     }
-
-    return qCookies;
+    return cookies;
   }
 
-    private struct function _parseSingleCookie( required string c) {
-        var aData = listToArray(arguments.c,";");
-        var stReturn = {};
+  private struct function _parseSingleCookie( required string c) {
+    var aData = listToArray(arguments.c,";");
+    var stReturn = {};
 
-        for (var i = 1; i <= arrayLen(aData); i++ ) {
-            if(i EQ 1) {
-                stReturn["name"] = listFirst(aData[i],"=");
-                stReturn["value"] = listLast(aData[i],"=");
-            } else {
-                stReturn[listFirst(aData[i],"=")] = listLast(aData[i],"=");
-            }
-        }
-
-        return stReturn;
+    for (var i = 1; i <= arrayLen(aData); i++ ) {
+      if(i EQ 1) {
+        stReturn["name"] = listFirst(aData[i],"=");
+        stReturn["value"] = listLast(aData[i],"=");
+      } else {
+        stReturn[listFirst(aData[i],"=")] = listLast(aData[i],"=");
+      }
     }
+
+    return stReturn;
+  }
 
   private struct function _parseHeaders(required string headerLines) {
     var statusRE = '(HTTP/\d\.\d\s+(\d+)\s+[^\n]+)';

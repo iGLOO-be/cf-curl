@@ -205,31 +205,24 @@ component {
     return _fullCommand(variables.commandPath, _commandArgs());
   }
 
-  public function exec(boolean all = false, boolean parse = false) {
+  public function exec(boolean all = false, boolean parse = true) {
     var args = _commandArgs();
-    var argstr = "";
     var p = "";
     var sTmpOutput = "";
 
-    if(arguments.parse){
+    if (arguments.parse || isNull(cfexecute)) {
     	p = _exec(variables.commandPath, args);
 
 	    if (p.exitValue() != 0) {
 	      return _handleProcessError(p, variables.commandPath, args);
-	    } else {
+	    } else if (arguments.parse) {
 	      var parsed = _parse();
 	      return all ? parsed : (
 	        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
 	      );
 	    }
     } else {
-    	for (var i = 1; i < arrayLen(args); i++) {
-    		argstr = argstr & args[i] & " ";
-    	}
-    	argstr = argstr & args[arrayLen(args)];
-
-    	cfexecute(name=variables.commandPath,arguments=argstr,variable="sTmpOutput");
-
+    	cfexecute(name=variables.commandPath, arguments=arrayToList(args, ' '), variable="sTmpOutput");
     	return sTmpOutput;
     }
   }
@@ -263,13 +256,13 @@ component {
     var h = '';
     for(h in variables.headers) {
       c.add('-H');
-      c.add('''#h#: #variables.headers[h]#''');
+      c.add('#h#: #variables.headers[h]#');
     }
 
     // Basic access authentication
     if(len(variables.userName) && len(variables.password)) {
       c.add('-H');
-      c.add('''Authorization: Basic #_getBasicAuthHash()#''');
+      c.add('Authorization: Basic #_getBasicAuthHash()#');
     }
 
     // Method
