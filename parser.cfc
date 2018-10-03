@@ -79,6 +79,7 @@ component {
               value = reReplace(value, 'HTTP\/\d\.\d\s100[^(HTTP)]*', '');
               r[dir]['status'] = _parseStatusLine(value);
               r[dir][section] = _parseHeaders(value);
+              r[dir]['cookies'] = _parseCookies(r[dir][section]);
             } else {
               r[dir][section] = value;
             }
@@ -134,13 +135,52 @@ component {
     };
   }
 
+  private array function _parseCookies(required struct headers) {
+    var cookies = [];
+    var aCookies = structKeyExists(arguments.headers,"set-cookie") ? arguments.headers["set-cookie"] : [];
+    if (!isArray(aCookies)) {
+        aCookies = [ aCookies ];
+    }
+    for(var c in aCookies) {
+      cookies.add(_parseSingleCookie(c));
+    }
+    return cookies;
+  }
+
+  private struct function _parseSingleCookie( required string c) {
+    var aData = listToArray(arguments.c,";");
+    var stReturn = {};
+
+    for (var i = 1; i <= arrayLen(aData); i++ ) {
+      if(i EQ 1) {
+        stReturn["name"] = listFirst(aData[i],"=");
+        stReturn["value"] = listLast(aData[i],"=");
+      } else {
+        stReturn[listFirst(aData[i],"=")] = listLast(aData[i],"=");
+      }
+    }
+
+    return stReturn;
+  }
+
   private struct function _parseHeaders(required string headerLines) {
     var statusRE = '(HTTP/\d\.\d\s+(\d+)\s+[^\n]+)';
     var content = IOUtils.toInputStream(trim(reReplace(headerLines, statusRE, '')), variables.encoding);
     var headersArr = HttpParser.parseHeaders(content);
     var headers = {};
+    var tmpName = "";
+    var tmp = "";
+
     for (var i = 1; i <= arrayLen(headersArr); i++) {
-      headers[headersArr[i].getName()] = headersArr[i].getValue();
+      tmpName = headersArr[i].getName();
+      if (structKeyExists(headers,tmpName) AND isArray(headers[tmpName])) {
+        arrayAppend(headers[tmpName],headersArr[i].getValue());
+      } else if (structKeyExists(headers,tmpName) AND isSimpleValue(headers[tmpName])) {
+        tmp = headers[tmpName];
+        headers[tmpName] = [ tmp, headersArr[i].getValue() ];
+      } else {
+        headers[tmpName] = headersArr[i].getValue();
+      }
     }
 
     return headers;

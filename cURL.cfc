@@ -205,17 +205,25 @@ component {
     return _fullCommand(variables.commandPath, _commandArgs());
   }
 
-  public function exec(boolean all = false) {
+  public function exec(boolean all = false, boolean parse = true) {
     var args = _commandArgs();
-    var p = _exec(variables.commandPath, args);
+    var p = "";
+    var sTmpOutput = "";
 
-    if (p.exitValue() != 0) {
-      return _handleProcessError(p, variables.commandPath, args);
+    if (arguments.parse || isNull(cfexecute)) {
+    	p = _exec(variables.commandPath, args);
+
+	    if (p.exitValue() != 0) {
+	      return _handleProcessError(p, variables.commandPath, args);
+	    } else if (arguments.parse) {
+	      var parsed = _parse();
+	      return all ? parsed : (
+	        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
+	      );
+	    }
     } else {
-      var parsed = _parse();
-      return all ? parsed : (
-        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
-      );
+    	cfexecute(name=variables.commandPath, arguments=arrayToList(args, ' '), variable="sTmpOutput");
+    	return sTmpOutput;
     }
   }
 
@@ -330,9 +338,11 @@ component {
     var runtime = Runtime.getRuntime();
 
     var cmd = [name];
+    var p = "";
     cmd.addAll(args);
 
-    var p = runtime.exec(cmd);
+    p = runtime.exec(cmd);
+
     variables.threadInput = [];
     variables.threadError = [];
 
@@ -357,7 +367,7 @@ component {
       var br = createObject('java', 'java.io.BufferedReader').init(isr);
       var line = br.readLine();
       while(!isNull(line)) {
-        threadInput.add(line);
+        threadError.add(line);
         line = br.readLine();
       }
     }
