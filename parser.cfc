@@ -172,15 +172,15 @@ component {
     var tmp = "";
 
     for (var i = 1; i <= arrayLen(headersArr); i++) {
-        tmpName = headersArr[i].getName();
-        if (structKeyExists(headers,tmpName) AND isArray(headers[tmpName])) {
-            arrayAppend(headers[tmpName],headersArr[i].getValue());
-        } else if (structKeyExists(headers,tmpName) AND isSimpleValue(headers[tmpName])) {
-            tmp = headers[tmpName];
-            headers[tmpName] = [ tmp, headersArr[i].getValue() ];
-        } else {
-              headers[tmpName] = headersArr[i].getValue();
-        }
+      tmpName = headersArr[i].getName();
+      if (structKeyExists(headers,tmpName) AND isArray(headers[tmpName])) {
+        arrayAppend(headers[tmpName],headersArr[i].getValue());
+      } else if (structKeyExists(headers,tmpName) AND isSimpleValue(headers[tmpName])) {
+        tmp = headers[tmpName];
+        headers[tmpName] = [ tmp, headersArr[i].getValue() ];
+      } else {
+        headers[tmpName] = headersArr[i].getValue();
+      }
     }
 
     return headers;
