@@ -10,6 +10,7 @@ component {
     variables.Pattern = createObject('java', 'java.util.regex.Pattern');
     variables.HttpParser = createObject('java', 'org.apache.commons.httpclient.HttpParser');
     variables.IOUtils = createObject('java', 'org.apache.commons.io.IOUtils');
+    variables.URLDecoder = createObject('java', 'java.net.URLDecoder');
     variables.encoding = 'utf-8';
   }
 
@@ -155,44 +156,24 @@ component {
       var section = lCase(set[2]);
       var data = set[3];
       var byte = '';
-      for(byte in listToArray(data, ' ')) {
-        if(!structKeyExists(asciiHexBuffer[d], section)) {
-          asciiHexBuffer[d][section] = [];
-        }
-        asciiHexBuffer[d][section].add(byte);
-      }
-    }
 
-    // convert ASCII hex to ASCII integers codes
-    var asciiIntBuffer = {request: {}, response: {}};
-    var dir = '';
-    for(dir in asciiHexBuffer) {
-      var section = '';
-      for(section in asciiHexBuffer[dir]) {
-        if(!structKeyExists(asciiIntBuffer[dir], section)) {
-          asciiIntBuffer[dir][section] = [];
-        }
-        var hexs = asciiHexBuffer[dir][section];
-        var hex = '';
-        for(hex in hexs) {
-          asciiIntBuffer[dir][section].add(InputBaseN(hex, 16));
-        }
+      if(!structKeyExists(asciiHexBuffer[d], section)) {
+        asciiHexBuffer[d][section] = [];
       }
+      asciiHexBuffer[d][section].add(arrayToList(listToArray(uCase(data), ' '), '%'));
     }
 
     // convert ACII codes to charactes
     var stringBuffer = {request: {}, response: {}};
-    for(dir in asciiIntBuffer) {
+    for(dir in asciiHexBuffer) {
       var section = '';
-      for(section in asciiIntBuffer[dir]) {
+      for(section in asciiHexBuffer[dir]) {
         if(!structKeyExists(stringBuffer[dir], section)) {
           stringBuffer[dir][section] = [];
         }
-        var codes = asciiIntBuffer[dir][section];
-        var code = '';
-        for(code in codes) {
-          stringBuffer[dir][section].add(chr(code));
-        }
+        var codes = asciiHexBuffer[dir][section];
+        var str = URLDecoder.decode('%' & arrayToList(codes, '%'));
+        stringBuffer[dir][section].add(str);
       }
     }
 
@@ -215,13 +196,11 @@ component {
       var section = '';
       for(section in stringBuffer[dir]) {
         var str = arrayToList(stringBuffer[dir][section], '');
-        if(section == 'data') {
-          if(isChunked) {
-            var hexPattern = '(\r\n[0-9a-f]+\r\n)';
-            str = reReplace(str, hexPattern, '', 'all');
-            // Remove first value of data.
-            str = reReplace(str, '^([0-9a-f]+\r\n)', '');
-          }
+        if(section == 'data' && isChunked) {
+          var hexPattern = '(\r\n[0-9a-f]+\r\n)';
+          str = reReplace(str, hexPattern, '', 'all');
+          // Remove first value of data.
+          str = reReplace(str, '^([0-9a-f]+\r\n)', '');
         }
         output[dir][section] = str;
       }
