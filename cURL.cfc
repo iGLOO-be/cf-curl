@@ -323,7 +323,7 @@ component {
       'Message: `#(isArray(error) ? error[1] : error)#`'
     ];
 
-    if (!isNull(variables.errorCodes[errorCode])) {
+    if (!isNull(errorCode) && structKeyExists(variables.errorCodes, errorCode) && !isNull(variables.errorCodes[errorCode])) {
       message[4] = variables.errorCodes[errorCode];
     }
 
