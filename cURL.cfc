@@ -200,7 +200,7 @@ component {
     return this;
   }
 
-  public function insecure(boolean insecure) {
+  public function insecure(boolean insecure = true) {
     variables.insecure = insecure;
     return this;
   }
