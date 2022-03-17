@@ -17,6 +17,7 @@ component {
     variables.timeout = javaCast('null', 0);
     variables.file = javaCast('null', 0);
     variables.output = javaCast('null', 0);
+    variables.insecure = false;
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -199,6 +200,11 @@ component {
     return this;
   }
 
+  public function insecure(boolean insecure) {
+    variables.insecure = insecure;
+    return this;
+  }
+
   // ----
 
   public string function command() {
@@ -307,6 +313,11 @@ component {
 
     // Target
     c.add(targetUrl);
+
+    // Insecure
+    if (variables.insecure) {
+      c.add('-k');
+    }
 
     return c;
   }
