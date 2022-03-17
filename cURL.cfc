@@ -281,6 +281,11 @@ component {
       c.add(variables.timeout);
     }
 
+    // Insecure
+    if (variables.insecure) {
+      c.add('-k');
+    }
+
     // Form
     var k = '';
     if(variables.method == 'post' || variables.method == 'put') {
@@ -313,11 +318,6 @@ component {
 
     // Target
     c.add(targetUrl);
-
-    // Insecure
-    if (variables.insecure) {
-      c.add('-k');
-    }
 
     return c;
   }
