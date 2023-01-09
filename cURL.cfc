@@ -18,7 +18,10 @@ component {
     variables.file = javaCast('null', 0);
     variables.output = javaCast('null', 0);
     variables.insecure = false;
+    variables.useTrace = true;
     variables.args = [];
+    variables.useOutputTmpFile = false;
+    variables.outputTmpFile = javaCast('null', 0);
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -216,6 +219,16 @@ component {
     return this;
   }
 
+  public function trace(boolean v = true) {
+    variables.useTrace = v;
+    return this;
+  }
+
+  public function useOutputTmpFile(boolean v = true) {
+    variables.useOutputTmpFile = v;
+    return this;
+  }
+
   // ----
 
   public string function command() {
@@ -227,20 +240,24 @@ component {
     var p = "";
     var sTmpOutput = "";
 
-    if (arguments.parse || isNull(cfexecute)) {
-    	p = _exec(variables.commandPath, args);
+    p = _exec(variables.commandPath, args);
+    if (p.exitValue() != 0) {
+      return _handleProcessError(p, variables.commandPath, args);
+    }
 
-	    if (p.exitValue() != 0) {
-	      return _handleProcessError(p, variables.commandPath, args);
-	    } else if (arguments.parse) {
-	      var parsed = _parse();
-	      return all ? parsed : (
-	        arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0)
-	      );
-	    }
+    if (variables.useTrace && arguments.parse) {
+    	var parsed = _parse();
+      if (all) {
+        return parsed;
+      }
+      var res = arrayLen(parsed) > 0 ? parsed[arrayLen(parsed)] : javaCast('null', 0);
+      if (!isNull(res) && variables.useOutputTmpFile) {
+        res['stdout'] = arrayToList(variables.threadInput, chr(13));
+        fileDelete(variables.outputTmpFile);
+      }
+      return !isNull(res) ? res : javaCast('null', 0);
     } else {
-    	cfexecute(name=variables.commandPath, arguments=arrayToList(args, ' '), variable="sTmpOutput");
-    	return sTmpOutput;
+      return arrayToList(variables.threadInput, Chr(13));
     }
   }
 
@@ -252,8 +269,15 @@ component {
 
     // Output
     if (isNull(variables.output)) {
-      // Headers and Content
-      c.addAll(['-i', '--trace', '-']);
+      if (variables.useTrace) {
+        // Headers and Content
+        c.add('--trace');
+        if (!variables.useOutputTmpFile) {
+          c.add('-');
+        } else {
+          c.add(_getOutputTmpFile());
+        }
+      }
     } else {
       c.add('-o');
       c.add(variables.output);
@@ -418,7 +442,11 @@ component {
   }
 
   private array function _parse() {
-    return new Parser().parse(variables.threadInput);
+    return new Parser().parse(
+      variables.useOutputTmpFile
+        ? listToArray(fileRead(_getOutputTmpFile()), chr(10) & chr(13))
+        : variables.threadInput
+    );
   }
 
   private string function _getBasicAuthHash() {
@@ -436,6 +464,15 @@ component {
       );
     }
     return arrayToList(f, '&');
+  }
+
+  private string function _getOutputTmpFile() {
+    if (!isNull(variables.outputTmpFile)) {
+      return variables.outputTmpFile;
+    }
+    var tempFilePath = GetTempFile(GetTempDirectory(), 'curl-req');
+    variables.outputTmpFile = tempFilePath;
+    return tempFilePath;
   }
 
 }

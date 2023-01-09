@@ -19,6 +19,7 @@ res = new cURL('http://httpbin.org/get')
 - `.header(name, value)`
 - `.headers({ name = value, ... })`
 - `.body(any)`
+- `.file(path)`: file to attach.
 - `.field(name, value)`
 - `.fields(struct)`
 - `.multipart(true|false)`: default `false`
@@ -26,8 +27,12 @@ res = new cURL('http://httpbin.org/get')
 - `.json()`: add header `application/json` and serialize fields.
 - `.head()`: head only.
 - `.timeout(sec)`
-- `.file(path)`: file to attach.
 - `.output(path)`
+- `.insecure(true|false)`
+- `.commandPath(command)`: custom command path
+- `.addArg(string)`
+- `.trace(true|false)`: default `true`
+- `.useOutputTmpFile(true|false)`
 - `.command()`: show the command generated.
 - `.exec(true|false)`: execute the command and return the request and response parsed. Default `false`. If `true`, it return all calls.
 
