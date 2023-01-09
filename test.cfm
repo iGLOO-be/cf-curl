@@ -1,3 +1,7 @@
+<cffunction  name="flush">
+  <cfflush />
+</cffunction>
+
 <cfscript>
 
 function dumpError(string content) {
@@ -6,7 +10,6 @@ function dumpError(string content) {
   </div>'
   );
 }
-
 
 writeOutput("<br/><h1>GET</h1>");
 target = 'http://httpbin.org/get';
@@ -18,7 +21,7 @@ if(deserializeJSON(res.response.data).headers.Host != expected.headers.host) {
   dumpError('Error: not equal to <br/> #serializeJson(expected)#');
 }
 
-
+flush();
 
 writeOutput("<br/><h1>GET with qs</h1>");
 target = 'http://httpbin.org/get';
@@ -30,7 +33,7 @@ if(deserializeJSON(res.response.data).args.abc != expected.args.abc) {
   dumpError('Error: not equal to <br/> #serializeJson(expected)#');
 }
 
-
+flush();
 
 writeOutput("<br/><h1>POST</h1>");
 target = 'http://httpbin.org/post';
@@ -61,7 +64,7 @@ if(responseData.data != expected) {
   dumpError('Error: not equal to <br/> #expected#');
 }
 
-
+flush();
 
 writeOutput("<br/><h1>POST (multipart)</h1>");
 target = 'http://httpbin.org/post';
@@ -78,7 +81,7 @@ if(!structKeyExists(expected.form, 'abc') || !structKeyExists(expected.form, 'az
   dumpError('Error: not equal to <br/> #expected#');
 }
 
-
+flush();
 
 writeOutput("<br/><h1>POST (json)</h1>");
 target = 'http://httpbin.org/post';
