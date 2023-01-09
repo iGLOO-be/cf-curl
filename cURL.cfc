@@ -18,6 +18,7 @@ component {
     variables.file = javaCast('null', 0);
     variables.output = javaCast('null', 0);
     variables.insecure = false;
+    variables.args = [];
 
     variables.UrlEncoder = createObject('java', 'java.net.URLEncoder');
     variables.Runtime = createObject('java', 'java.lang.Runtime');
@@ -205,6 +206,16 @@ component {
     return this;
   }
 
+  public function commandPath(string cmd) {
+    variables.commandPath = cmd;
+    return this;
+  }
+
+  public function addArg(string arg) {
+    variables.args.add(arg);
+    return this;
+  }
+
   // ----
 
   public string function command() {
@@ -315,6 +326,9 @@ component {
     } else if(structCount(variables.fields)) {
       targetUrl &= '?' & _encodeFields(variables.fields);
     }
+
+    // Others
+    c.addAll(variables.args);
 
     // Target
     c.add(targetUrl);
